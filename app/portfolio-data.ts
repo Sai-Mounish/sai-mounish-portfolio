@@ -1,5 +1,5 @@
 export const achievements = [
-  { value: "5.5+", label: "Years of experience" },
+  { value: "5.9+", label: "Years of experience" },
   { value: "30%", label: "Faster application performance" },
   { value: "40%", label: "Less change-detection overhead" },
   { value: "30%", label: "Faster SQL response times" },

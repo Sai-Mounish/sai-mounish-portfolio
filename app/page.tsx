@@ -18,9 +18,63 @@ export default function Home() {
     window.localStorage.setItem("portfolio-theme", light ? "light" : "dark");
   }, [light]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    root.classList.add("motion-enabled");
+    const targets = document.querySelectorAll(
+      ".section-label, .section-heading, .about-layout, .skill-card, .timeline-item, .leadership-grid article, .recognition-grid article, .project-card, .credentials-grid article, .contact > *:not(.contact-glow), .impact-strip > div"
+    );
+    const motionStyles = ["motion-up-left", "motion-from-left", "motion-zoom", "motion-from-right", "motion-turn", "motion-up-right"];
+    targets.forEach((element, index) => {
+      element.classList.add("scroll-reveal");
+      element.classList.add(motionStyles[index % motionStyles.length]);
+      (element as HTMLElement).style.setProperty("--reveal-delay", `${Math.min(index % 4, 3) * 70}ms`);
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      }),
+      { threshold: 0.12, rootMargin: "0px 0px -7% 0px" }
+    );
+    targets.forEach((element) => observer.observe(element));
+
+    let ticking = false;
+    const updateScrollMotion = () => {
+      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const progress = Math.min(window.scrollY / max, 1);
+      root.style.setProperty("--scroll-progress", progress.toString());
+      root.style.setProperty("--scroll-rotation", `${window.scrollY * 0.018}deg`);
+      root.style.setProperty("--portrait-rotation", `${1.25 - progress * 2}deg`);
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollMotion);
+        ticking = true;
+      }
+    };
+    updateScrollMotion();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      root.classList.remove("motion-enabled");
+    };
+  }, []);
+
   return (
     <main>
       <a className="skip-link" href="#main-content">Skip to content</a>
+      <div className="scroll-progress" aria-hidden="true" />
+      <div className="scroll-orbit" aria-hidden="true"><span /><span /></div>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Sai Mounish, home">
           <span>SM</span><strong>Sai Mounish</strong>
@@ -31,6 +85,8 @@ export default function Home() {
           ))}
         </nav>
         <div className="header-actions">
+          <a className="header-linkedin" href="https://www.linkedin.com/in/sai-durga-mounish-madireddy" target="_blank" rel="noreferrer">LinkedIn <ArrowIcon /></a>
+          <a className="header-contact" href="mailto:saidurgamounishmadireddy@gmail.com">Email me <ArrowIcon /></a>
           <button className="theme-toggle" onClick={() => setLight(!light)} aria-label={`Switch to ${light ? "dark" : "light"} theme`}>
             <span aria-hidden="true">{light ? "☾" : "☀"}</span>
           </button>
@@ -42,23 +98,25 @@ export default function Home() {
         <section className="hero" id="top">
           <div className="hero-grid" aria-hidden="true" />
           <div className="hero-copy reveal">
-            <div className="eyebrow"><span className="status-dot" /> Available for senior opportunities</div>
-            <h1>I modernize complex systems into <em>fast, scalable products.</em></h1>
-            <p className="hero-intro">Senior Full Stack Developer and Technical Lead with 5.5+ years of experience modernizing enterprise applications, leading Angular migrations and building scalable products with Java and Spring Boot.</p>
+            <div className="eyebrow"><span className="status-dot" /> Open to senior engineering opportunities</div>
+            <p className="hero-name">Sai Durga Mounish Madireddy</p>
+            <h1>Building modern systems that are <em>fast, scalable and dependable.</em></h1>
+            <p className="hero-intro">Senior Full Stack Developer and Technical Lead with 5.9+ years of experience in enterprise modernization, Angular migrations, Java 17+, Spring Boot and performance-focused engineering.</p>
             <div className="cta-row">
               <a className="button primary" href="#work">Explore my work <ArrowIcon /></a>
-              <a className="button secondary" href="/Sai-Durga-Mounish-Madireddy-Resume.pdf" download>Download résumé <span aria-hidden="true">↓</span></a>
+              <a className="button secondary" href="./Sai-Durga-Mounish-Madireddy-Resume.pdf" download>Download résumé <span aria-hidden="true">↓</span></a>
             </div>
             <div className="hero-meta">
               <span>Based in Hyderabad, India</span>
               <span>Angular · Java · Spring Boot</span>
+              <a href="mailto:saidurgamounishmadireddy@gmail.com">saidurgamounishmadireddy@gmail.com</a>
             </div>
           </div>
 
-          <aside className="hero-card reveal delay-1" aria-label="Professional overview">
-            <div className="card-bar"><span>profile.ts</span><span>•••</span></div>
-            <pre><code><span className="code-key">const</span> engineer = {"{"}{"\n"}  focus: <span className="code-value">&quot;modernization&quot;</span>,{"\n"}  experience: <span className="code-number">5.5</span> + <span className="code-value">&quot; years&quot;</span>,{"\n"}  impact: [<span className="code-value">&quot;speed&quot;</span>, <span className="code-value">&quot;scale&quot;</span>, <span className="code-value">&quot;clarity&quot;</span>],{"\n"}  leadership: <span className="code-key">true</span>{"\n"}{"}"};</code></pre>
-            <div className="orbit orbit-one" /><div className="orbit orbit-two" />
+          <aside className="hero-card portrait-card reveal delay-1" aria-label="Professional portrait of Sai Mounish">
+            <div className="portrait-frame"><img src="./sai-mounish-professional.png" alt="Sai Durga Mounish Madireddy in professional business attire" /></div>
+            <div className="portrait-caption"><div><strong>Sai Mounish</strong><span>Senior Full Stack Developer</span></div><span className="availability">Available</span></div>
+            <div className="portrait-code"><span>Angular 20</span><span>Java 17+</span><span>Spring Boot</span></div>
           </aside>
         </section>
 
@@ -71,7 +129,7 @@ export default function Home() {
           <div className="about-layout">
             <h2>Engineering with a modernization mindset.</h2>
             <div className="about-copy">
-              <p>I turn legacy enterprise applications into maintainable, high-performance products. My work spans Angular architecture, Java and Spring Boot services, API integration, database optimization and the leadership practices that keep delivery moving.</p>
+              <p>I turn legacy enterprise applications into maintainable, high-performance products. My work spans Angular architecture, Java and Spring Boot services, REST API integration, database optimization and the leadership practices that keep delivery moving.</p>
               <p>Across finance, reporting and e-commerce platforms, I have led migrations, built reusable systems and helped teams ship with stronger standards—without disrupting essential business workflows.</p>
               <p>I work across the complete delivery lifecycle: understanding business workflows, designing reusable UI patterns, agreeing API contracts, improving data access and supporting teams through implementation, review and release.</p>
             </div>
@@ -154,11 +212,18 @@ export default function Home() {
 
         <section className="contact" id="contact">
           <div className="contact-glow" aria-hidden="true" />
-          <p>Have a complex product to modernize?</p>
+          <p>Senior Full Stack · Angular Lead · Technical Lead</p>
           <h2>Let’s build what’s next.</h2>
+          <span className="contact-intro">Available for opportunities where modernization, performance and engineering leadership matter.</span>
+          <a className="contact-email" href="mailto:saidurgamounishmadireddy@gmail.com">saidurgamounishmadireddy@gmail.com</a>
           <a className="button primary" href="mailto:saidurgamounishmadireddy@gmail.com">Start a conversation <ArrowIcon /></a>
           <div className="contact-links"><a href="mailto:saidurgamounishmadireddy@gmail.com">Email</a><a href="https://www.linkedin.com/in/sai-durga-mounish-madireddy" target="_blank" rel="noreferrer">LinkedIn <ArrowIcon /></a></div>
         </section>
+      </div>
+
+      <div className="mobile-contact-dock" aria-label="Quick contact options">
+        <a href="mailto:saidurgamounishmadireddy@gmail.com">Email me</a>
+        <a href="https://www.linkedin.com/in/sai-durga-mounish-madireddy" target="_blank" rel="noreferrer">LinkedIn <ArrowIcon /></a>
       </div>
 
       <footer><a className="brand" href="#top"><span>SM</span><strong>Sai Mounish</strong></a><p>Senior Full Stack Developer · Hyderabad, India</p><p>© 2026</p></footer>
